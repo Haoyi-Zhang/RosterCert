@@ -22,16 +22,17 @@ MAX_TRUST_ANCHOR_BYTES = 256
 
 
 def _bounded_read(path: Path, limit: int, label: str) -> bytes:
+    """Read at most ``limit + 1`` bytes from one already-opened file handle."""
+    if type(limit) is not int or limit < 0:
+        raise ValueError("read limit must be a nonnegative integer")
     try:
-        size = path.stat().st_size
-    except OSError as exc:
-        raise ValueError(f"cannot stat {label}: {exc}") from exc
-    if size > limit:
-        raise ValueError(f"{label} exceeds {limit} bytes")
-    try:
-        return path.read_bytes()
+        with path.open("rb") as handle:
+            raw = handle.read(limit + 1)
     except OSError as exc:
         raise ValueError(f"cannot read {label}: {exc}") from exc
+    if len(raw) > limit:
+        raise ValueError(f"{label} exceeds {limit} bytes")
+    return raw
 
 
 def main() -> int:

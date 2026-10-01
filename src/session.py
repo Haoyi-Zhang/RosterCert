@@ -11,48 +11,27 @@ import json
 from typing import Any
 
 from roster import Roster
+from wire_profile import (
+    MAX_IDENTIFIER,
+    MAX_KEY_TEXT,
+    MAX_MESSAGE,
+    ascii_identifier,
+    canonical_json,
+    scalar_text,
+)
 
 _CONTEXT_FIELDS = {
     "domain", "mode", "application", "session", "message", "namespace",
     "events", "lower", "upper", "cut", "profile",
 }
 _MODES = {"HIST", "FRESH", "ROBUST"}
-_MAX_IDENTIFIER = 128
-_MAX_MESSAGE = 4096
-
-
-def canonical_json(value: Any) -> bytes:
-    """Return the sole JSON encoding used by the reference profile.
-
-    All callers pass schema-validated values containing only JSON strings,
-    booleans, integers, lists, dictionaries, and ``None``.  ASCII escaping,
-    sorted object keys, and separator removal make the byte representation
-    deterministic.  This is an application codec, not a general JSON
-    canonicalization standard.
-    """
-    return json.dumps(
-        value,
-        ensure_ascii=True,
-        sort_keys=True,
-        separators=(",", ":"),
-        allow_nan=False,
-    ).encode("ascii")
-
-
-def _bounded_text(value: Any, field: str, *, allow_empty: bool = False,
-                  limit: int = _MAX_IDENTIFIER) -> str:
-    if not isinstance(value, str):
-        raise ValueError(f"{field} must be text")
-    if (not allow_empty and not value) or len(value) > limit:
-        raise ValueError(f"{field} has invalid length")
-    return value
 
 
 def _unique_names(value: Any, field: str) -> list[str]:
-    if not isinstance(value, list) or any(
-        not isinstance(x, str) or not x or len(x) > _MAX_IDENTIFIER for x in value
-    ):
+    if not isinstance(value, list):
         raise ValueError(f"{field} must be a bounded nonempty-string list")
+    for index, item in enumerate(value):
+        ascii_identifier(item, f"{field}[{index}]", limit=MAX_IDENTIFIER)
     if len(value) != len(set(value)):
         raise ValueError(f"{field} contains duplicates")
     return value
@@ -63,8 +42,8 @@ def normalize_context(context: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(context, dict) or set(context) != _CONTEXT_FIELDS:
         raise ValueError("session context fields do not match schema")
     for field in ("domain", "application", "session", "namespace"):
-        _bounded_text(context[field], field)
-    _bounded_text(context["message"], "message", allow_empty=True, limit=_MAX_MESSAGE)
+        ascii_identifier(context[field], field, limit=MAX_IDENTIFIER)
+    scalar_text(context["message"], "message", allow_empty=True, limit=MAX_MESSAGE)
     mode = context["mode"]
     if mode not in _MODES:
         raise ValueError("unknown temporal mode")
@@ -77,20 +56,13 @@ def normalize_context(context: dict[str, Any]) -> dict[str, Any]:
     model.bounds(lo, hi)
 
     raw_profile = context["profile"]
-    if (
-        not isinstance(raw_profile, list)
-        or not raw_profile
-        or any(
-            not isinstance(row, list)
-            or len(row) != 2
-            or any(
-                not isinstance(x, str) or not x or len(x) > _MAX_IDENTIFIER
-                for x in row
-            )
-            for row in raw_profile
-        )
-    ):
+    if not isinstance(raw_profile, list) or not raw_profile:
         raise ValueError("profile must be a nonempty list of identity/event pairs")
+    for index, row in enumerate(raw_profile):
+        if not isinstance(row, list) or len(row) != 2:
+            raise ValueError("profile must be a nonempty list of identity/event pairs")
+        ascii_identifier(row[0], f"profile[{index}] identity", limit=MAX_IDENTIFIER)
+        ascii_identifier(row[1], f"profile[{index}] event", limit=MAX_IDENTIFIER)
     identities = [row[0] for row in raw_profile]
     events = [row[1] for row in raw_profile]
     if len(identities) != len(set(identities)):
@@ -144,8 +116,8 @@ def normalize_context(context: dict[str, Any]) -> dict[str, Any]:
 def history_payload(context: dict[str, Any]) -> bytes:
     """Bytes authenticated by the reference history authority.
 
-    The authority signs the namespace, complete event DAG, and declared view
-    bounds.  The application/session/message and selected profile remain bound by
+    The authority signs the protocol domain, namespace, complete event DAG, and
+    declared view bounds.  The application/session/message and selected profile remain bound by
     the session statement and delegations, not by the history authority.
     """
     normalized = normalize_context(context)
@@ -162,19 +134,14 @@ def history_payload(context: dict[str, Any]) -> bytes:
 def normalize_ephemeral_table(context: dict[str, Any], table: Any) -> list[list[str]]:
     """Require one identity/version/key triple for every selected profile entry."""
     normalized = normalize_context(context)
-    if (
-        not isinstance(table, list)
-        or any(
-            not isinstance(row, list)
-            or len(row) != 3
-            or any(
-                not isinstance(x, str) or not x or len(x) > 256
-                for x in row
-            )
-            for row in table
-        )
-    ):
+    if not isinstance(table, list):
         raise ValueError("ephemeral table must contain identity/event/key triples")
+    for index, row in enumerate(table):
+        if not isinstance(row, list) or len(row) != 3:
+            raise ValueError("ephemeral table must contain identity/event/key triples")
+        ascii_identifier(row[0], f"ephemeral_table[{index}] identity", limit=MAX_IDENTIFIER)
+        ascii_identifier(row[1], f"ephemeral_table[{index}] event", limit=MAX_IDENTIFIER)
+        scalar_text(row[2], f"ephemeral_table[{index}] key", limit=MAX_KEY_TEXT)
     identities = [row[0] for row in table]
     events = [row[1] for row in table]
     keys = [row[2] for row in table]

@@ -9,6 +9,7 @@ The self-contained article proves:
 - an exact interval characterization of all causal cuts authorizing one fixed identity/key-version profile;
 - exact historical, view-fresh, and window-robust acceptance modes;
 - a session-separated compiler that binds exact long-term versions to fresh one-session keys;
+- an explicit signed protocol-domain tag, with public parameters plus the certificate determining every authenticated payload;
 - a generic completed-framing reduction;
 - a conditional executable Ed25519 signed-checkpoint/delegation/vector profile;
 - a conditional key-prefixed BGLS one-session aggregate realization;
@@ -21,7 +22,7 @@ The Ed25519 profile is implemented and performs real public-key verification. Th
 
 The historical finite diagnostic campaign exceeded its declared cumulative ceiling. The superseded controller charged **835,446** obligations against a **600,000** ceiling. Under the governing project rule, that breach is terminal. Later runs and ledgers cannot reset, exclude, or repair it.
 
-Accordingly, all frozen files under `data/` and `results/` are provenance and source-inspection material only. They are not evidence for a theorem, cryptographic property, complexity result, resource claim, or scientific reproduction claim. `results/campaign-status.json` is the authoritative interpretation. Do not run `reproduce.py` expecting to create valid evidence; another run would only be another post-breach observation.
+Accordingly, all frozen files under `data/` and `results/` are provenance and source-inspection material only. They are not evidence for a theorem, cryptographic property, complexity result, resource claim, or scientific reproduction claim. `results/campaign-status.json` is authoritative. The exact pre-V3 two-column session helper that produced the archived 12 mutation labels is absent; `results/HISTORICAL-SOURCE-LIMITATION.md` records that gap. `reproduce.py` exits before generation, reservation, or enumeration and cannot create evidence.
 
 ## Repository map
 
@@ -29,18 +30,22 @@ Accordingly, all frozen files under `data/` and `results/` are provenance and so
 - `src/roster.py`: finite-poset roster semantics.
 - `src/oracle.py`: separately structured exhaustive oracle for small source-integrity cases.
 - `src/cases.py`: deterministic historical-corpus generator.
-- `src/session.py`: strict semantic normalization and canonical byte encodings for history, delegation, and base messages.
+- `src/wire_profile.py`: shared printable-ASCII identifier, Unicode-scalar message, and canonical-JSON boundary.
+- `src/ed25519_points.py`: strict canonical, nonidentity, prime-order Ed25519 public-key admission.
+- `src/session.py`: semantic normalization and exact history, delegation, and base payload encodings.
 - `src/reference_profile.py`: executable Ed25519 checkpoint, delegation, and linear one-session signature profile.
-- `verify_reference.py`: bounded file verifier; requires canonical ASCII JSON bytes.
+- `verify_reference.py`: single-handle bounded file verifier; requires canonical ASCII JSON bytes.
 - `generate_reference_example.py`: deterministic generator for the public, non-secret fixture.
 - `examples/`: canonical reference certificate and independent history trust anchor.
-- `tests/test_core.py`, `tests/test_reference_profile.py`: 38 source-integrity tests.
+- `tests/test_core.py`, `tests/test_reference_profile.py`, `tests/test_boundaries.py`: 47 source-integrity tests.
 - `audit_artifact.py`: static package/fixture/ledger/bibliography audit; never invokes the historical scientific runner.
+- `BOUNDARY-VALIDATION.md`: focused evidence and non-claims for the five repaired interfaces.
 - `claim_evidence_ledger.csv`: material claims mapped to proofs, source checks, and maturity.
 - `literature.csv`: 80 scholarly sources with role and disclosed reading depth.
 - `bibliography_audit.csv`: persistent-identifier, citation-count, and verification-depth audit for all 80 entries.
 - `external_resources.csv`: scholarly/tool records, acquisition mode, license boundary, and integration role.
-- `data/`, `results/`, `reproduce.py`: preserved historical diagnostics and terminal campaign disclosure; non-evidentiary.
+- `data/`, `results/`: preserved historical diagnostics and terminal campaign/source disclosure; non-evidentiary.
+- `reproduce.py`: non-executing limitation reporter; the missing pre-V3 dependency is not reconstructed or replaced.
 
 ## Dependency
 
@@ -54,7 +59,7 @@ From the repository root:
 python3 -m unittest discover -s tests -v
 ```
 
-The current package contains **38** test methods. They cover semantic malformed inputs, exact identity/event/key binding, all temporal modes, certificate schema strictness, wrong trust anchors, signature and context mutation, cross-identity aliases, cross-role key reuse, duplicate ephemeral keys, malformed unselected active keys, noncanonical encodings, bounded input handling, duplicate JSON members, and command-line verification. Passing them shows that the package executes the stated checks; it does not prove Ed25519, the general theorems, or deployment security.
+The current package contains **47** test methods. They cover semantic malformed inputs, exact identity/event/key binding, all temporal modes, certificate schema strictness, wrong trust anchors, signature and context mutation, aliases across identities or roles, duplicate ephemeral keys, strict validation of every active Ed25519 key (including an unselected `ff`-repeated key), the supplementary-scalar/surrogate-pair serialization alias, printable-ASCII identifiers, Unicode-scalar messages, canonical wire encoding, one-handle `limit+1` reads, duplicate JSON members, and command-line verification. The alias test is a static object-interface regression, not evidence of an online forgery. Passing the suite shows that the package executes these checks; it does not prove Ed25519, the general theorems, or deployment security.
 
 ## Regenerate and verify the public certificate
 
@@ -93,7 +98,7 @@ The source contains no `\input`, BibTeX invocation, project-tree path, repositor
 
 ## Optional inspection of historical code
 
-`reproduce.py` remains solely to preserve how the historical corpus and accounting records were produced. It prints a permanent noncompliance warning. Its outputs must not be described as repaired, compliant, reproduced, or claim-supporting.
+`reproduce.py` does not reproduce the campaign. It reports that the cumulative campaign is terminally invalid and that the exact pre-V3 two-column session-codec dependency is missing, then exits before importing generators or reserving work. Adapting calls to the current three-column V3 contract would be a new program and must not be described as historical provenance.
 
 ## Cryptographic boundary
 
@@ -103,7 +108,7 @@ The executable profile uses three independently modelled Ed25519 roles:
 2. active long-term version/delegation keys; and
 3. fresh one-session keys.
 
-It rejects byte reuse across roles, rejects one active long-term key assigned to two identities, and permits same-owner long-term reuse across event versions only because every payload binds the exact event ID. It has no secure key store, randomness service, erasure guarantee, rollback protection, replay database, governance implementation, transparency consistency proof, or availability protocol.
+All identifiers use one printable US-ASCII boundary; messages use Unicode scalar values and reject explicit surrogate code points before canonical ASCII escaping. Issuance, object verification, and the CLI share this normalization. Every active event key, selected or not, must be a canonical nonidentity point in the prime-order Ed25519 subgroup; hexadecimal length alone is insufficient. The profile also rejects byte reuse across roles and one active long-term key assigned to two identities, while permitting same-owner reuse across event versions because every payload binds the exact event ID. It has no secure key store, randomness service, erasure guarantee, rollback protection, replay database, governance implementation, transparency consistency proof, or availability protocol.
 
 The proof-level BGLS profile uses validated type-III public-key pairs, public-key-prefixed messages, and a complete table/message/signer-set encoding. Its aggregate is one source-group element; the table and other certificate evidence remain linear. Current BLS implementation guidance is used for validation practice only, while the cited multi-user BLS/BGLS paper supplies the security theorem.
 

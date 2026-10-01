@@ -38,12 +38,16 @@ def read_csv(path: Path) -> list[dict[str, str]]:
 def main() -> int:
     required = [
         "README.md", "LICENSE", "requirements.txt", "verify_reference.py",
-        "generate_reference_example.py", "claim_evidence_ledger.csv",
+        "generate_reference_example.py", "BOUNDARY-VALIDATION.md",
+        "claim_evidence_ledger.csv",
         "literature.csv", "bibliography_audit.csv", "external_resources.csv",
         "proofs/analysis.tex", "proofs/analysis.pdf",
+        "src/wire_profile.py", "src/ed25519_points.py",
+        "tests/test_boundaries.py",
         "examples/reference-certificate.json",
         "examples/reference-history-public-key.txt",
         "results/campaign-status.json",
+        "results/HISTORICAL-SOURCE-LIMITATION.md",
     ]
     missing = [name for name in required if not (ROOT / name).is_file()]
     require(not missing, f"missing required files: {missing}")
@@ -92,6 +96,20 @@ def main() -> int:
     require(all(row["maturity"] and row["fresh_recheck"] for row in claims),
             "claim ledger has an empty maturity or recheck field")
 
+    test_methods = 0
+    for test_path in sorted((ROOT / "tests").glob("test_*.py")):
+        test_methods += len(re.findall(r"(?m)^    def test_[A-Za-z0-9_]+\(",
+                                      test_path.read_text(encoding="utf-8")))
+    require(test_methods == 47, f"expected 47 unit-test methods, found {test_methods}")
+
+    runner = (ROOT / "reproduce.py").read_text(encoding="utf-8")
+    require("from session import" not in runner,
+            "disabled archival runner still imports the current session codec")
+    require("no enumeration or ledger reservation was started" in runner,
+            "archival runner does not state its non-execution boundary")
+    require("pre-V3 two-column session-codec source" in runner,
+            "archival runner does not disclose the missing source dependency")
+
     analysis = (ROOT / "proofs/analysis.tex").read_text(encoding="utf-8")
     require("\\input{" not in analysis, "standalone analysis.tex still has an input dependency")
     require("\\bibliography{" not in analysis, "standalone analysis.tex still needs BibTeX")
@@ -115,6 +133,7 @@ def main() -> int:
         "literature_rows": len(literature),
         "cited_bibliography_rows": len(bibliography),
         "claim_rows": len(claims),
+        "unit_test_methods": test_methods,
         "external_resource_rows": len(resources),
         "embedded_bibitems": len(bibitems),
         "campaign_status": campaign["status"],

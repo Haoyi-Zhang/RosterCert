@@ -37,6 +37,7 @@
 Accountable multisignatures identify the parties authorizing a common message, but a changing service must also identify the causal roster and exact key versions under which that authorization is valid. We model an authenticated membership history as a finite event poset and evaluate rosters at downward-closed cuts; concurrent maximal writes for one identity quarantine that identity. For a fixed signer/version profile and lower and upper view bounds, we prove that all authorizing cuts are either empty or one interval with explicit least and greatest endpoints. This yields exact historical, view-fresh, and window-robust tests. We then give a session-separated compiler: every selected long-term version key delegates to a fresh one-session base key while binding the complete causal context and identity--event--key table. A generic reduction decomposes completed framing into history, encoding, delegation, or one-session base failures. A linear executable reference profile uses an Ed25519-signed history checkpoint, Ed25519 delegations, and one exact-message signature per selected ephemeral key. Separately, key-prefixed Boneh--Gentry--Lynn--Shacham aggregation realizes a one-group-element proof-level base under its multi-user random-oracle theorem. Neither profile hides the linear table, delegations, signer description, or history evidence. Weighted roster selection is polynomial by maximum closure when each identity's writes form a chain, but NP-complete with quarantined forks even for unit weights and height-three histories. Cached authenticated views cannot reveal undisclosed revocations or certify complete observation.
 \end{abstract}
 \noindent\textbf{Keywords:} accountable multisignatures; aggregate signatures; causal membership; session separation; key rotation; authorization certificates; revocation; asynchronous systems.
+
 \section{Introduction}\label{sec:intro}
 An accountable multisignature answers a cryptographic question: which registered parties authorized a common message?  A service with asynchronous membership changes must answer a second question before that attribution is useful: \emph{which versions of those parties were jointly authorized when the message was signed?}  The two questions are not equivalent.  A valid contribution under Alice's previous key and one under Bob's current key may refer to states that cannot coexist in any causally consistent roster.  Conversely, an old roster may remain internally coherent and cryptographically authentic after a revocation has occurred at a replica that the verifier has not observed.
 
@@ -70,6 +71,7 @@ The executable Ed25519 profile is intentionally linear and centralizes checkpoin
 
 \paragraph{Organization.}
 Section~\ref{sec:related} positions the result.  Sections~\ref{sec:model} and~\ref{sec:windows} define the causal model and prove the interval theorem.  Section~\ref{sec:compiler} gives the modes and session-separated construction.  Section~\ref{sec:security} proves semantic soundness, attribution, stale-version rejection, and size accounting.  Section~\ref{sec:selection} gives the optimization and observation boundaries.  Section~\ref{sec:evidence} records proof status, the invalidated computational activity, and reproducibility limits.  Section~\ref{sec:conclusion} concludes.
+
 \section{Background and related work}\label{sec:related}
 The problem joins four bodies of work: multisignature accountability, dynamic public-key state, authenticated histories, and consistent-cut reasoning.  Each supplies a different obligation.  Signatures authenticate messages but do not choose a registration state; logs authenticate records but not signer intent; causal snapshots define coherent states but not the authenticity or completeness of their events.
 
@@ -108,6 +110,7 @@ With chain-ordered writes, weight differences reduce roster selection to maximum
 
 \subsection{Composition boundary}
 Universal composability provides a stronger replacement discipline, including ordered multisignature functionalities~\cite{canetti2001uc,baum2025ordered}.  We prove a narrower game-based decomposition into history, encoding, delegation, and exact-message attribution failures.  The concrete paths are a linear Ed25519 profile~\cite{bernstein2012ed25519} and a proof-level BGLS-KP aggregate; ordinary signature unforgeability supplies the delegation premise~\cite{goldwasser1988digital}.  Persistent state, certificate growth, view completeness, and compromise timing remain separate claims.
+
 \section{Authenticated event histories and roster cuts}\label{sec:model}
 \subsection{The input history}
 A history is a finite directed acyclic graph whose vertex set is $E$. Each event $e$ has a unique identifier, an owner $\own(e)$, a finite list of parents, and a membership value. The value is either inactive or an active public-key value with a nonnegative weight $w(e)$. The parent relation generates a reflexive partial order $\leq$: a parent precedes its child. Event identifiers name versions exactly. Two events may contain the same public-key bytes but still name different versions.
@@ -167,6 +170,7 @@ Profiles containing an unknown event, an event of the wrong owner, or an inactiv
 \draw[->] (g)--(y);
 \node[font=\small] at (8.2,-1.6) {(b) Fork quarantine};
 \end{tikzpicture}
+
 \caption{Declared-order constraints across and within identities. In (a), a cut containing Bob's event $b$ must contain Alice's rotation $r$, so the profile using $a$ and $b$ is impossible. In (b), a cut containing both $x$ and $y$ quarantines identity $A$; neither incomparable write is an authorized current version. An arrow runs from a declared parent to its child.}
 \label{fig:conflicts}
 \end{figure}
@@ -184,6 +188,7 @@ The event model does not treat corruption as a membership update. Exposure conce
 A valid history establishes that its admitted events and dependencies can be checked according to the assumed governance rule. A valid cut establishes downward closure in that history. Authorization then establishes a relation between that cut and a specified profile. None of these statements identifies an observer-independent newest cut.
 
 This separation also prevents a circular use of cryptography. An implementation cannot define an authorized history as ``the history accepted by the proposed scheme'' and then use that definition as a proof that the scheme rejects unauthorized events. Authentication and admission must have their own explicit mechanism or be a stated input assumption. They remain input assumptions throughout the finite implementation in this note.
+
 \section{The exact interval for a fixed signer profile}\label{sec:windows}
 \subsection{A local characterization with global consequences}
 The meaning of a unique current write has a simple order-theoretic form. Finiteness matters: a nonempty subset of a finite poset has a maximal element above each of its elements.
@@ -315,6 +320,7 @@ Robust-mode failure has an even simpler description.  If $\lo\neq L$, some selec
 An elementary implementation computes the transitive predecessor sets in topological order, unions the forced sets, marks forbidden writes, and removes their descendants. A direct graph-search implementation uses $O(n(n+m))$ time and $O(n^2)$ reachability bits for $n$ vertices and $m$ parent edges, after which the endpoint computation is polynomial in $n$ and the profile size. Packed bitsets reduce constants; they must not be treated as unit-cost words when $n$ grows without bound.
 
 The endpoint pair is a compact \emph{semantic} summary once the authenticated history is available. A separate verifier can reconstruct both endpoints or enumerate all cuts in a small model and check that the same family is obtained. Neither method authenticates the input history. The executable study uses both a bitset implementation and a set-based exhaustive oracle, while Proposition~\ref{prop:helly} is supported by its general proof rather than a separate finite experiment.
+
 \section{Causal-roster certificates and session separation}\label{sec:compiler}
 The interval theorem determines whether a profile is authorized in a declared history.  A completed cryptographic authorization must bind that statement to the message and to the exact signer evidence.  We first define three temporal acceptance modes, then give a session-separated compiler that turns long-term version keys into one-session exact-set signing keys.  The separation is the construction-level step that removes a hidden cross-table assumption: no honest base signing key is reused when the roster changes.  The compiler is generic; Section~\ref{sec:security} also instantiates its base interface with key-prefixed BGLS aggregation.
 
@@ -322,11 +328,11 @@ The interval theorem determines whether a profile is authorized in a declared hi
 The compiler uses three independently specified components.
 
 \paragraph{Authenticated history.}
-A history-authentication interface has a persistent verification key $vk_H$ and an algorithm
+A history-authentication interface has public parameters $pp_H$, a persistent verification key $vk_H$, and an algorithm
 \[
-  \mathsf{HistVerify}(vk_H,\mathsf{ns},\Gamma,\pi_H)\in\{0,1\}.
+  \mathsf{HistVerify}(pp_H,vk_H,\mathsf{tag},\mathsf{ns},\Gamma,L,U,\pi_H)\in\{0,1\}.
 \]
-The namespace $\mathsf{ns}$ prevents records from unrelated membership domains from being mixed.  Acceptance means that the events, owner bindings, long-term public-key fields, activity flags, weights, and declared parents in $\Gamma$ were admitted by the external governance rule.  It also means that event identifiers are unambiguous in that namespace.  The interface may be realized by a signed checkpoint, transparency proof, authenticated dictionary, or another mechanism.  Acyclicity alone is insufficient.
+The tag $\mathsf{tag}$ and namespace $\mathsf{ns}$ separate protocol and membership domains.  Acceptance means that $\Gamma,L,U$, including owner, key, status, weight, and parent fields, were admitted by the external governance rule and that event identifiers are unambiguous.  A signed checkpoint, transparency proof, or authenticated dictionary may realize the interface; acyclicity alone is insufficient.
 
 \paragraph{Version-key delegation signatures.}
 Each active event $e$ carries a long-term digital-signature verification key $dpk(e)$.  Its secret key signs only typed delegation statements defined below.  The signature scheme $\mathsf{DS}=(\mathsf{DGen},\mathsf{DSign},\mathsf{DVerify})$ must be secure against adaptive chosen-message attacks in the multi-user setting.  Reusing one $dpk$ in several versions of the same identity creates one exposure domain.  Registering the same $dpk$ for different identities is rejected by governance, because otherwise a valid delegation could be relabelled without a forgery.
@@ -339,7 +345,7 @@ For one immutable session table $P=(epk_1,\ldots,epk_k)$, the base scheme suppli
 when the completed signature is valid for common message $\mu$ and signer-index set $S_P$ under the verification object $K_P$ derived from $P$.  The exact base transcript may be interactive; only its completed output enters the certificate.  Section~\ref{sec:security} requires exact-message attribution for one such table, including the base scheme's actual rogue-key model.  It first proves a generic composition theorem and then shows that BGLS-KP realizes the interface when $K_P$ is the validated ordered table and the exact table and signer set are encoded into the signed message.  Unlike the direct-key baseline discussed below, the main compiler never places a long-term version key in two base tables.
 
 \subsection{Canonical semantic commitment}
-Let $\enc$ be an injective, prefix-free, type-separated encoding.  Integers have fixed endianness and length delimiters; sets and maps are sorted canonically; an event encodes its namespace, identifier, owner, status, long-term key value, weight, and ordered parent list.  A cut encodes sorted event identifiers.  A profile encodes sorted triples $(i,e,dpk(e))$.  These choices exclude ambiguity between concatenations, between absent and empty fields, and between two serializations of the same mathematical object.
+Let $pp=(pp_H,\enc,H,\mathsf{ids})$ fix the history parameters, encoding, hash, and algorithm/type identifiers; $\mathsf{tag}$ is instead an explicit certificate field signed at both layers.  The encoding $\enc$ is injective, prefix-free, and type-separated: integers use fixed endianness and lengths, sets and maps are sorted, an event includes its namespace, identity, owner, status, key, weight, and ordered parents, a cut lists sorted event identifiers, and a profile lists sorted triples $(i,e,dpk(e))$.
 
 Let $H$ be collision resistant and domain separated.  We use
 \[
@@ -349,7 +355,7 @@ Let $H$ be collision resistant and domain separated.  We use
 \]
 with analogous digests $h_C$ and $h_Q$.  Using full encodings would remove the hash-collision event at the price of a larger message.  In either case, the verifier needs the encoded data or a sound proof of the relevant predicate.  A short digest does not prove view completeness, downward closure, or freshness.
 
-The application context contains a domain tag $\mathsf{tag}$, application identifier $\mathsf{app}$, unique session identifier $\mathsf{sid}$, and application message $m$.  Uniqueness of $\mathsf{sid}$ is an application invariant, not a clock epoch: independent sessions need not be totally ordered.  Replay of an identical accepted certificate remains an application-state question.
+The context fields $(\mathsf{tag},\mathsf{app},\mathsf{sid},m)$ map respectively to \texttt{domain}, \texttt{application}, \texttt{session}, and \texttt{message} in the executable profile.  Session uniqueness is an application invariant, not a clock epoch, and replay remains an application-state question.
 
 \subsection{Acceptance modes}
 The same history can support three different temporal claims.  Treating them as one Boolean predicate would hide the policy choice.
@@ -420,7 +426,7 @@ For each mode define the distinguished cut field
 The bottom symbol is a typed constant, not an omitted byte string.  Define the common session statement
 \begin{align}
  \chi=\enc(&\mathsf{CAUSAL\mbox{-}ROSTER\mbox{-}SESSION\mbox{-}V3},
- \mathsf{mode},\mathsf{app},\mathsf{sid},m,\mathsf{ns},h_\Gamma,h_L,h_U,\nonumber\\
+ \mathsf{tag},\mathsf{mode},\mathsf{app},\mathsf{sid},m,\mathsf{ns},h_\Gamma,h_L,h_U,\nonumber\\
  &H(\mathsf{cutC}\parallel\enc(C^*)),h_Q,P).
  \label{eq:session-statement}
 \end{align}
@@ -442,16 +448,16 @@ The pre-protocol has two ordered broadcasts before the ordinary base protocol.  
 
 A certificate is
 \[
- \tau=(\mathsf{mode},\mathsf{app},\mathsf{sid},m,\mathsf{ns},\Gamma,\pi_H,
+ \tau=(\mathsf{tag},\mathsf{mode},\mathsf{app},\mathsf{sid},m,\mathsf{ns},\Gamma,\pi_H,
  L,U,C^*,Q,P,\Delta,K_P,\sigma),
 \]
 where $\Delta=(\delta_1,\ldots,\delta_k)$.  A deployment may replace explicit history data by content-addressed objects and sound proofs.  The logical fields remain part of the signed statement even when transmitted out of band.
 
 \begin{definition}[Certificate verification]
-Given persistent history key $vk_H$ and certificate $\tau$, the verifier performs the following checks.
+Given public parameters $pp$, persistent history key $vk_H$, and certificate $\tau$, the verifier performs the following checks.
 \begin{enumerate}
   \item Parse every field under one canonical encoding and reject duplicate identities, duplicate events, malformed keys, an empty profile, or an unknown mode.
-  \item Verify $\mathsf{HistVerify}$ and reconstruct the declared partial order.  Check that $L,U$ are ideals and $L\subseteq U$.
+  \item Verify $\mathsf{HistVerify}(pp_H,vk_H,\mathsf{tag},\mathsf{ns},\Gamma,L,U,\pi_H)$ and reconstruct the declared partial order.  Check that $L,U$ are ideals and $L\subseteq U$.
   \item Check every profile entry is an admitted active write of the named identity, lies in $U$, and contains the long-term delegation key used below.
   \item For $\mathsf{HIST}$, require $C^*\in[L,U]_{\Id}$ and authorization of $Q$ there.  For $\mathsf{FRESH}$, require $C^*=U$ and authorization at $U$.  For $\mathsf{ROBUST}$, require $C^*=\bot$ and $C_{\min}=L$, $C_{\max}=U$ by Theorem~\ref{thm:window}.
   \item Check that $P$ is the exact, duplicate-free table for $Q$ and validate the base scheme's registration evidence.  Recompute $\chi$.
@@ -459,7 +465,7 @@ Given persistent history key $vk_H$ and certificate $\tau$, the verifier perform
   \item Derive or recompute $K_P$, reconstruct $\mu$ and $S_P$, and accept only if $\mathsf{BVerify}(K_P,\mu,S_P,\sigma)=1$.
 \end{enumerate}
 \end{definition}
-The order states logical dependencies rather than a side-channel prescription.  A valid base aggregate cannot excuse a malformed history, and a valid delegation for one ephemeral table cannot authorize another.
+The order gives logical dependencies, not a side-channel prescription.  The pair $(pp,\tau)$ reconstructs every history, delegation, and base payload, including $\mathsf{tag}$; a valid aggregate cannot excuse malformed history or reuse a delegation for another table.
 
 \subsection{Correctness and direct-key baseline}
 Correctness follows from deterministic reconstruction.  If the history proof is honest, the selected mode predicate holds, every signer receives the same canonical context and table, all delegations verify, and the base protocol completes correctly on $\mu$, certificate verification accepts.  No synchrony or completion guarantee follows: parties may fail to collect one common view, table, delegation vector, or base transcript.
@@ -492,6 +498,7 @@ A $b$-bit descriptor cannot independently identify all $k$-subsets of an $n$-ide
 
 \subsection{What the compiler does not provide}
 The compiler binds signers to a precise causal statement and removes long-term base-key reuse.  The BGLS-KP realization closes one compact aggregate interface.  Section~\ref{subsec:ed25519-reference} also gives a central signed-checkpoint and linear Ed25519 reference profile for executable end-to-end verification; neither profile supplies decentralized governance or global freshness.  They do not prove global freshness beyond $U$, give forward security after secret compromise, prove completeness of a signer's observations, ensure liveness, prevent replay of an identical certificate, hide the signer set, or attribute an aborted ceremony.  Nor does the BGLS result turn an unrelated base theorem with incompatible registration or signer-set semantics into the single-session game.  Those are separate construction or systems obligations.
+
 \section{Security definitions and composition}\label{sec:security}
 This section proves the main construction theorem.  Session separation replaces the previous cross-table premise by two standard-looking obligations: chosen-message security for long-term delegation signatures and exact-message accountability for one freshly generated base table.  The theorem remains conditional on the concrete schemes satisfying the games actually stated here; it does not infer those games from an abstract interface name.
 
@@ -508,7 +515,7 @@ be the exact tuple reconstructed from Equations~\eqref{eq:session-statement}--\e
 
 \subsection{Component games}
 \paragraph{History soundness.}
-For fixed namespace and governance rule, the adversary wins if it produces $(\Gamma,\pi_H)$ accepted by $\mathsf{HistVerify}$ although a parsed event, owner binding, long-term key, status, weight, parent edge, or namespace relation was not admitted.  Let $\epsilon_H$ bound this probability.  Sound authentication of a received view is not proof that no undisclosed event exists.
+For fixed $pp$, protocol tag, namespace, and governance rule, the adversary wins if it produces $(\mathsf{tag},\mathsf{ns},\Gamma,L,U,\pi_H)$ accepted by $\mathsf{HistVerify}(pp_H,vk_H,\mathsf{tag},\mathsf{ns},\Gamma,L,U,\pi_H)$ although a parsed field or bound was not admitted.  Let $\epsilon_H$ bound this probability.  Sound authentication of a received view is not proof that no undisclosed event exists.
 
 \paragraph{Context binding.}
 The adversary wins if two distinct interpreted session statements accepted by the canonical parser produce the same $\chi$ or if two distinct base contexts produce the same $\mu$.  Complete injective encoding gives zero advantage.  With digests for large fields, a win yields an encoding ambiguity or hash collision.  Let the resulting bound be $\epsilon_B$.
@@ -522,7 +529,7 @@ The base challenger creates one immutable table $P$ containing any number of pro
 The signer set belongs to the authorization record.  A definition that records only $\mu$ is insufficient when a partial contribution for one set can be reused in another.  Encoding $S$ into $\mu$ is necessary, but the base theorem must also cover the actual interactive transcript and aggregation rule.  The game permits malicious co-signers and keys because the compiler does not assume every selected party is honest.
 
 \subsection{Wrapper accountability game}
-The wrapper challenger provides $vk_H$ and access to honest session creation.  A request fixes a parseable semantic context through $Q$.  The challenger checks the same history and temporal predicate as the public verifier.  For each selected protected entry it generates a fresh base key pair, freezes $P$, returns the exact delegation on $\chi$, and exposes the base signing interface only for $(K_P,\mu,S_P)$.  Invalid contexts receive no honest authorization.  Corruption of either relevant secret removes that entry/session from the protected set.
+The wrapper challenger provides $(pp,vk_H)$ and access to honest session creation.  A request fixes a parseable semantic context through $Q$.  The challenger checks the same history and temporal predicate as the public verifier.  For each selected protected entry it generates a fresh base key pair, freezes $P$, returns the exact delegation on $\chi$, and exposes the base signing interface only for $(K_P,\mu,S_P)$.  Invalid contexts receive no honest authorization.  Corruption of either relevant secret removes that entry/session from the protected set.
 
 The adversary wins if it outputs an accepted certificate $\tau$ and protected entry $(i,e)$ for which the challenger did not record both the exact delegation and exact base participation in $\mathsf{Sess}(\tau)$.  The game concerns a completed accepted authorization.  It does not blame silence, a malformed partial contribution, or an aborted interaction.
 
@@ -563,7 +570,7 @@ Let $(hsk,hpk)$ be an Ed25519 key pair~\cite{bernstein2012ed25519}.  For a decla
  \eta_H=\enc(\mathsf{CAUSAL\mbox{-}ROSTER\mbox{-}HISTORY\mbox{-}V1},
         \mathsf{tag},\mathsf{ns},\Gamma,L,U).
 \]
-A central checkpoint issuer returns $\pi_H=\mathsf{EdSign}_{hsk}(\eta_H)$ only after its external admission rule accepts the namespace, events, key fields, parent edges, and bounds.  The corresponding history verifier checks this signature under the persistent $hpk$.  This profile authenticates exactly the received view; it does not prove that the issuer is honest, that all replicas have converged, or that no later event exists.
+A central checkpoint issuer returns $\pi_H=\mathsf{EdSign}_{hsk}(\eta_H)$ only after its external admission rule accepts the explicit protocol domain, namespace, events, key fields, parent edges, and bounds.  The corresponding history verifier checks this signature under the persistent $hpk$.  This profile authenticates exactly the received view; it does not prove that the issuer is honest, that all replicas have converged, or that no later event exists.
 
 Every active event carries an Ed25519 delegation key.  The typed message is exactly Equation~\eqref{eq:delegation}, with the full identity--event--ephemeral-key triple and session statement.  Each ephemeral key is also Ed25519.  Instead of aggregating, entry $j$ returns
 \[
@@ -607,7 +614,7 @@ For at most $q_s$ session tables and at most $k_{\max}$ selected entries per tab
 Substitute Theorem~\ref{thm:ed25519-reference} into Theorem~\ref{thm:composition}.
 \end{proof}
 
-The corollary is an explicit, linear-size end-to-end profile.  The packaged implementation uses raw Ed25519 keys and signatures in lower-case hexadecimal, canonical ASCII JSON, distinct scheme identifiers, and the V3 type tags of Section~\ref{sec:compiler}.  Its payloads bind the history view, application context, mode, exact profile, and full identity--event--ephemeral-key table.  It rejects noncanonical wire bytes, malformed or zero keys, cross-identity long-term-key aliases, cross-role key reuse, duplicate identities or ephemeral keys, wrong event bindings, invalid signatures, and semantically invalid contexts.  Same-owner key reuse is allowed because the exact version event remains signed.
+The corollary is a linear-size end-to-end profile.  Its \texttt{domain} field realizes $\mathsf{tag}$ in $\eta_H$, $\chi$, and $\tau$; identifiers are bounded printable US-ASCII, while messages admit Unicode scalars but not surrogate code points, making the ASCII-escaped encoding injective on the admitted domain.  Before use, every active event key, selected or not, must decode as a canonical nonidentity prime-order Ed25519 point.  The verifier also rejects noncanonical bytes, cross-identity or cross-role aliases, duplicate or misbound entries, invalid signatures, and invalid roster semantics.  Same-owner key reuse remains event-bound.
 
 This executable profile narrows, but does not erase, the deployment boundary.  The deterministic keys in the public example are test fixtures and are unusable as secrets.  The implementation delegates arithmetic and constant-time details to a maintained cryptographic library, does not prove that library correct, and supplies no key-storage, randomness, rollback, replay-database, or checkpoint-governance service.  Most importantly, the profile is linear and does not establish the compact aggregate or constant registry-key properties sought from the BGLS and accountable-multisignature layers.
 
@@ -735,6 +742,7 @@ Reduction failure mode & Simulator may need the unknown secret in a non-target t
 An audit of an alternative base has five checkpoints.  The BGLS-KP construction above meets the first two by explicit encoding and its cited malicious-co-key game.  First, the verification object must bind exactly one immutable $P$ and model the real proof-of-possession or malicious-key rule.  Second, the base game must bind the same $K_P$, canonical $\mu$, $S_P$, and transcript data relevant to reuse.  Third, its timing must cover the wrapper's malicious registrations, adaptive delegations, view choices, corruptions, and setup assumptions; a selective theorem cannot simply be renamed adaptive.
 
 Fourth, implementations must enforce one fresh session key per frozen table.  Deterministic derivation needs domain-separated uniqueness and pseudorandomness; erasure may strengthen compromise resilience but is not assumed.  Fifth, compressing $P$, $\Delta$, or history evidence needs a separate binding or soundness theorem.  A failed checkpoint blocks that alternative named instantiation, not the generic compiler theorem or the BGLS-KP corollary proved above.
+
 \section{Selection complexity and temporal limits}\label{sec:selection}\label{sec:optimization}
 The exact-window algorithm evaluates one supplied profile.  Applications may instead optimize over all profiles or demand freshness beyond a declared view.  These are strictly harder questions.  The first half of this section separates a polynomial chain case from an NP-complete fork case.  The second half proves two information limits that no signature equation can remove.
 The preceding section fixes the attributed signer versions. Sometimes an application instead asks how much active weight can coexist in some admissible cut. This is a selection problem over rosters, not merely an authorization check for a supplied profile. The distinction explains why a polynomial fixed-profile test does not imply a polynomial algorithm for the best profile.
@@ -861,6 +869,7 @@ Additional authenticated receipts can make some observations publicly provable, 
 An accepted aggregate under the conditional verifier of Section~\ref{sec:security} supports three layered statements. Its semantic checks support that the named versions coexist at the stated cut and respect the verifier's known floor. Its assumed base security supports that protected attributed keys authorized the exact bound context. Its history assumption supports the authenticity of admitted records. None of these premises supplies undisclosed revocations or proves a dishonest sender's complete observation history.
 
 This is why a causal-order separation must be formulated more carefully than ``without causality, attribution is ambiguous.'' A precise declared order already resolves the fixed-profile query by Theorem~\ref{thm:window}. What remains ambiguous can instead be the correspondence between that declared order and outside facts. A construction must state which correspondence it assumes, which it establishes, and which it deliberately leaves to the application.
+
 \section{Artifact scope, invalidated diagnostics, and limitations}\label{sec:evidence}
 The article's general claims are supported by the written arguments in Sections~\ref{sec:windows}--\ref{sec:selection} and the reductions in Section~\ref{sec:security}.  The repository contains executable aids, but their evidentiary status differs.  The Ed25519 reference profile is a concrete implementation of a conditional theorem and can be checked by public-key verification.  The older finite roster campaign is retained only for provenance because it exceeded its cumulative enumeration ceiling; no later subset of runs can be declared a fresh compliant campaign.
 
@@ -869,9 +878,9 @@ The primary roster implementation uses bit-mask predecessor closures and evaluat
 
 The V3 codec binds the three modes, application context, complete event DAG, bounds, cut, exact signer profile, and the table of identity, event, and ephemeral-key triples.  The reference verifier checks distinct Ed25519 history, delegation, and one-session signature objects.  It enforces canonical active keys, rejects cross-identity key aliases, cross-role key reuse, and noncanonical wire bytes, but permits event-bound same-owner key reuse.  A deterministic public fixture is byte-reproducible and deliberately contains no usable secret.  The implementation calls the maintained \texttt{cryptography} library; it neither reimplements nor proves that library.
 
-The packaged source-integrity suite has 38 unit-test methods.  It covers malformed event DAGs and cuts, forks and resolution, cross-identity causal incompatibility, repeated public-key bytes across versions, flow-certificate mutation, all three session modes, version-complete table binding, certificate schema strictness, wrong trust anchors, history/delegation/base signature mutation, context replay and field changes, duplicate ephemeral keys, noncanonical encodings, mismatched issuer keys, malformed unselected active keys, cross-identity long-term-key aliases, cross-role key reuse, oversized inputs, duplicate JSON members, and command-line verification of the public fixture.  Passing these tests shows that this package executes the stated checks; it does not establish EUF-CMA security, global freshness, general theorem correctness, or deployment safety.
+The source-integrity suite has 47 tests.  Besides semantic, signature, schema, alias, and CLI mutations, it checks the supplementary-scalar/surrogate-pair JSON alias on a miniature object; rejects non-ASCII identifiers, surrogates, the undecodable active key \texttt{ff} repeated 32 times, and identity or small-order points; accepts a Unicode-scalar message; and confirms one-handle reading of at most the limit plus one byte.  These tests exercise the implementation, not EUF-CMA security, global freshness, the general theorems, or deployment safety.
 
-For transparency, the repository also retains 2,000 exact-profile window queries, 150 chain-optimization instances, 15 graph-reduction instances, 200 renaming/order transformations, four semantic negative controls, 12 older symbolic session mutations, and their archived outputs.  Those counts describe development files only.  They are not used to support the abstract, theorem maturity, reduction bounds, or conclusion.
+The archive retains 2,000 window queries, 150 chain cases, 15 graph cases, 200 transformations, four controls, and 12 legacy session-mutation labels.  The exact pre-V3 two-column helper for those labels is absent, whereas V3 requires identity--event--key triples; \texttt{reproduce.py} therefore exits before generation, reservation, or enumeration.  These files support no paper claim.
 
 \subsection{Selection defect and permanent campaign invalidation}
 The development corpus originally assigned pseudorandom draws while iterating over a Python set of identity names.  A fixed random seed does not fix process-dependent set iteration.  Sorting the identities before assigning draws repaired the selector and changed 77 profiles in the superseded 3,215-case corpus; 47 changes fall inside the later retained sampled cohort.  The repository preserves a concrete counterexample and the complete difference list.  This was an input-selection defect rather than a theorem counterexample, because the selector chose queries but never adjudicated their outcomes.
@@ -892,11 +901,12 @@ The quarantine rule is one concurrent-update policy.  Add-wins, remove-wins, tim
 Freshness remains view-relative.  Historical mode certifies an older cut, fresh mode rejects versions displaced in the admitted upper view, and robust mode quantifies over the declared interval.  None can reveal an undisclosed remote revocation.  Stronger freshness requires evidence such as a fresh authority response, certified checkpoint, quorum acknowledgement, or bounded-delay assumption, and that evidence must be bound into the session statement.
 
 \subsection{Inspection and reproduction boundary}
-Canonical serialization is a security boundary.  The reference profile fixes bounded ASCII identifiers, a bounded message, integer and Boolean event fields, duplicate rejection, lower-case hexadecimal raw keys and signatures, sorted JSON object keys, sorted semantic lists, and explicit algorithm/type identifiers.  This format is an application profile rather than a claim of compatibility with every external canonical-JSON standard.  Production use would additionally need protocol-version negotiation, key lifecycle rules, secure randomness, persistent replay state, dependency review, and independent implementation assessment.
+Canonical serialization is a security boundary.  The profile admits printable US-ASCII identifiers and bounded Unicode-scalar messages, rejects surrogate code points before escaping, and fixes field types, duplicate rejection, lower-case hexadecimal, sorting, and type identifiers.  Hence the ASCII-escaped map is injective on accepted objects although Python would encode a supplementary scalar and an explicit surrogate pair alike.  That pre-fix equality was an object-interface ambiguity, not an observed online forgery.  Issuance, object verification, and the CLI share this validation; no compatibility with every canonical-JSON standard is claimed.
 
-The repository documents article compilation, a static package audit, source-integrity tests, deterministic fixture regeneration, reference-certificate verification, and an 80-row bibliography audit that records persistent identifiers, reading depth, claim use, and manuscript citation counts.  It also documents the historical runner so the accounting defect can be inspected; executing that runner again cannot repair or extend the invalidated campaign.  Successful extraction, LaTeX compilation, unit tests, example verification, and package comparison are delivery-integrity checks, not independent scientific replication.
+The repository documents compilation, static audit, tests, deterministic fixture regeneration, certificate verification, bibliography checks, the campaign breach, and the missing legacy codec.  Adapting that codec to V3 or running new enumeration could not repair the campaign.  Extraction, compilation, tests, and package comparison are delivery checks, not independent scientific replication.
 
 The article can therefore be assessed without trusting the archived corpus.  Every unconditional general statement in the abstract and conclusion has a written proof; every cryptographic statement names its component assumptions and reduction loss.  The executable reference profile demonstrates exact field binding and real signature verification, while the compact BGLS claim remains a proof-level instantiation with an explicit implementation boundary.
+
 \section{Conclusion}\label{sec:conclusion}
 A changing signer roster is not merely a list attached to a multisignature.  Under asynchronous delivery, exact key versions are authorized relative to causal information.  For the quarantine policy studied here, the cuts authorizing a fixed profile are either empty or one exact interval of the ideal lattice.  The interval separates historical existence, freshness at an admitted upper view, and robustness throughout a view interval; it also gives concise compatibility witnesses and one- or two-entry obstructions.
 
@@ -909,6 +919,8 @@ The cost is visible rather than hidden.  The BGLS aggregate is one group element
 The model also marks two independent boundaries.  Optimizing active weight is polynomial for per-identity chains through maximum closure, but unresolved same-owner forks make selection NP-complete even in height-three histories.  No cached authenticated view can reveal an undisclosed remote revocation or prove the completeness of a dishonest signer's observations.  Stronger global-freshness claims need stronger evidence or synchrony assumptions.
 
 Finally, the article does not use its invalidated finite roster campaign as claim evidence.  The cumulative enumeration ceiling was exceeded before the accounting defect was recognized, and a later ledger cannot retroactively reset that activity.  The archived outputs remain for transparency.  The new Ed25519 fixture and mutation suite are source-integrity checks of the stated executable profile, not empirical proof of the general results.  The scientific conclusions rest on the written interval, complexity, impossibility, and cryptographic reductions.  Decentralized history governance, pairing-level implementation, performance measurement, and a theorem-level audit of the stronger compact-registry base remain separate deployment tasks.
+
+
 \begin{thebibliography}{10}
 
 \bibitem{haidar2025privacy}

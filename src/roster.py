@@ -8,6 +8,8 @@ from collections import deque
 from dataclasses import dataclass
 from typing import Any, Iterable
 
+from wire_profile import MAX_IDENTIFIER, ascii_identifier, scalar_text
+
 
 @dataclass(frozen=True)
 class Event:
@@ -28,11 +30,11 @@ class Roster:
         for row in records:
             if not isinstance(row, dict) or set(row) != fields:
                 raise ValueError('event fields do not match the schema')
-            for field in ('id', 'owner', 'key'):
-                if not isinstance(row[field], str) or len(row[field]) > 128:
-                    raise ValueError('invalid string field')
-            if not row['id'] or not row['owner'] or row['id'] in events:
-                raise ValueError('empty or duplicate identifier')
+            ascii_identifier(row['id'], 'event id', limit=MAX_IDENTIFIER)
+            ascii_identifier(row['owner'], 'event owner', limit=MAX_IDENTIFIER)
+            scalar_text(row['key'], 'event key', allow_empty=True, limit=MAX_IDENTIFIER)
+            if row['id'] in events:
+                raise ValueError('duplicate event identifier')
             if type(row['active']) is not bool or type(row['weight']) is not int:
                 raise ValueError('active must be bool and weight must be int')
             if not 0 <= row['weight'] <= 100:
@@ -40,8 +42,10 @@ class Roster:
             if (row['active'] and not row['key']) or (not row['active'] and row['key']):
                 raise ValueError('active keys must be nonempty; inactive keys must be empty')
             parents = row['parents']
-            if not isinstance(parents, list) or any(not isinstance(x, str) for x in parents):
+            if not isinstance(parents, list):
                 raise ValueError('invalid parent list')
+            for index, parent in enumerate(parents):
+                ascii_identifier(parent, f'parent[{index}]', limit=MAX_IDENTIFIER)
             if len(parents) != len(set(parents)):
                 raise ValueError('duplicate parent')
             events[row['id']] = Event(row['id'], row['owner'], row['active'], row['key'],

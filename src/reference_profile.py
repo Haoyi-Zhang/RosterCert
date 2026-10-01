@@ -18,6 +18,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PublicKey,
 )
 
+from ed25519_points import validate_public_key_bytes
 from session import (
     base_payload,
     canonical_json,
@@ -62,14 +63,16 @@ def _decode_hex(value: Any, field: str, size: int) -> bytes:
         or any(c not in "0123456789abcdef" for c in value)
     ):
         raise ValueError(f"{field} is not canonical {size}-byte hexadecimal")
-    raw = bytes.fromhex(value)
-    if size == 32 and raw == b"\x00" * 32:
-        raise ValueError(f"{field} is the all-zero public-key encoding")
-    return raw
+    return bytes.fromhex(value)
 
 
 def decode_public_key(value: Any, field: str = "public key") -> Ed25519PublicKey:
-    return Ed25519PublicKey.from_public_bytes(_decode_hex(value, field, 32))
+    raw = _decode_hex(value, field, 32)
+    try:
+        validate_public_key_bytes(raw)
+    except ValueError as exc:
+        raise ValueError(f"{field} is not a valid Ed25519 verification key: {exc}") from exc
+    return Ed25519PublicKey.from_public_bytes(raw)
 
 
 def _verify_signature(public_hex: Any, signature_hex: Any, message: bytes,
@@ -99,7 +102,7 @@ def _validate_reference_event_keys(context: dict[str, Any]) -> None:
     for event in context["events"]:
         if not event["active"]:
             continue
-        _decode_hex(event["key"], f"event {event['id']} public key", 32)
+        decode_public_key(event["key"], f"event {event['id']} public key")
         previous = owner_by_key.setdefault(event["key"], event["owner"])
         if previous != event["owner"]:
             raise ValueError("one active Ed25519 key cannot represent two identities")
@@ -109,9 +112,12 @@ def _validate_role_separation(
     context: dict[str, Any], table: list[list[str]], history_public_key_hex: Any
 ) -> None:
     """Reject key-byte reuse across the three independently modelled roles."""
-    history_key = _decode_hex(history_public_key_hex, "history public key", 32).hex()
+    history_public = decode_public_key(history_public_key_hex, "history public key")
+    history_key = public_key_hex(history_public)
     long_term_keys = {event["key"] for event in context["events"] if event["active"]}
     ephemeral_keys = {row[2] for row in table}
+    for index, ephemeral in enumerate(ephemeral_keys):
+        decode_public_key(ephemeral, f"ephemeral public key {index}")
     if long_term_keys & ephemeral_keys:
         raise ValueError("ephemeral keys must be distinct from active long-term keys")
     if history_key in long_term_keys or history_key in ephemeral_keys:
@@ -258,7 +264,7 @@ def _normalize_certificate(certificate: Any) -> tuple[
             raise ValueError("delegation names the wrong version event")
         if row["long_term_key"] != events[event]["key"]:
             raise ValueError("delegation key differs from authenticated event key")
-        _decode_hex(row["long_term_key"], "long-term public key", 32)
+        decode_public_key(row["long_term_key"], "long-term public key")
         _decode_hex(row["signature"], "delegation signature", 64)
 
     base = certificate["base"]
@@ -285,7 +291,7 @@ def _normalize_certificate(certificate: Any) -> tuple[
         event, ephemeral = table_map[row["identity"]]
         if row["event"] != event or row["ephemeral_key"] != ephemeral:
             raise ValueError("base signature differs from the frozen ephemeral table")
-        _decode_hex(row["ephemeral_key"], "ephemeral public key", 32)
+        decode_public_key(row["ephemeral_key"], "ephemeral public key")
         _decode_hex(row["signature"], "base signature", 64)
 
     return context, table, expected_delegations, expected_signatures
