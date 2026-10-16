@@ -1,0 +1,7 @@
+{
+  "check": "deterministic public fixture regeneration",
+  "matches_supplied_bytes": true,
+  "certificate_bytes": 2124,
+  "selected_entries": 2,
+  "scope": "one owned synthetic certificate; no historical enumeration, primitive-security proof, or deployment test"
+}

@@ -4,8 +4,7 @@
 \usepackage{mathptmx}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{booktabs,tabularx,array}
-\usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning}
+\usepackage{graphicx}
 \usepackage{cite}
 \usepackage[hidelinks]{hyperref}
 \hypersetup{pdftitle={Causal Roster Certificates for Session-Separated Accountable Multisignatures under Asynchronous Churn},pdfauthor={Haoyi Zhang and Huaijin Ran},pdfsubject={Causal authorization semantics, session separation, and a key-prefixed BGLS realization for accountable multisignatures under asynchronous membership churn},pdfkeywords={accountable multisignatures, aggregate signatures, causal membership, key rotation, authorization certificates, partial orders, revocation, asynchronous systems}}
@@ -154,22 +153,7 @@ Profiles containing an unknown event, an event of the wrong owner, or an inactiv
 
 \begin{figure}[t]
 \centering
-\begin{tikzpicture}[x=1cm,y=1cm,>=Stealth,
-  event/.style={draw,rectangle,minimum width=1.25cm,minimum height=.65cm,inner sep=5pt,font=\small},
-  every path/.style={line width=.55pt}]
-\node[event] (a) at (0,0) {$a:A_0$};
-\node[event] (r) at (2.25,0) {$r:A_1$};
-\node[event] (b) at (4.5,0) {$b:B_0$};
-\draw[->] (a)--(r);
-\draw[->] (r)--(b);
-\node[font=\small] at (2.25,-.85) {(a) Joint-profile conflict};
-\node[event] (g) at (7,0) {$g:A_{\bot}$};
-\node[event] (x) at (9.25,.75) {$x:A_x$};
-\node[event] (y) at (9.25,-.75) {$y:A_y$};
-\draw[->] (g)--(x);
-\draw[->] (g)--(y);
-\node[font=\small] at (8.2,-1.6) {(b) Fork quarantine};
-\end{tikzpicture}
+\includegraphics{figures/causal-conflicts.pdf}
 
 \caption{Declared-order conflicts: (a) incompatible joint profile; (b) quarantine. Arrows run from parent to child.}
 \label{fig:conflicts}
@@ -400,7 +384,7 @@ The three modes also lead to different cache rules.  A historical certificate sh
 
 \begin{table}[t]
 \centering
-\caption{Interpretation of the three signed modes.  ``Newest'' is always relative to the admitted upper view, never to undisclosed global events.}
+\caption{Signed modes within an admitted upper view.}
 \label{tab:modes}
 \begin{tabularx}{\linewidth}{@{}p{.17\linewidth}p{.24\linewidth}X@{}}
 \toprule
@@ -483,7 +467,7 @@ The running conflict $a<r<b$ illustrates both layers.  The profile $\{A\mapsto a
 Table~\ref{tab:sizes} separates persistent state from per-authorization communication.
 \begin{table}[t]
 \centering
-\caption{Objects in the session-separated certificate.  ``Constant'' means bounded by the security parameter independently of identities and events.}
+\caption{Persistent and per-authorization certificate objects.}
 \label{tab:sizes}
 \begin{tabularx}{\linewidth}{@{}p{.25\linewidth}X@{}}
 \toprule
@@ -501,7 +485,7 @@ Application replay state & Optional state keyed by $(\mathsf{app},\mathsf{sid})$
 
 A $b$-bit descriptor cannot independently identify all $k$-subsets of an $n$-identity universe unless $2^b\geq\binom nk$.  This observation is not a lower bound on persistent verification state because the signer set may be supplied separately.  It does explain why constant-size base signatures do not make the complete causal certificate constant-size.  Session separation leaves the base aggregate compact when the base scheme does, but adds $k$ ephemeral keys and $k$ delegations.
 
-\subsection{What the compiler does not provide}
+\subsection{Operational integration}
 The compiler binds signers to a precise causal statement and removes long-term base-key reuse.  The BGLS-KP realization closes one compact aggregate interface.  Section~\ref{subsec:ed25519-reference} also gives a central signed-checkpoint and linear Ed25519 reference profile for executable end-to-end verification; neither profile supplies decentralized governance or global freshness.  They do not prove global freshness beyond $U$, give forward security after secret compromise, prove completeness of a signer's observations, ensure liveness, prevent replay of an identical certificate, hide the signer set, or attribute an aborted ceremony.  Nor does the BGLS result turn an unrelated base theorem with incompatible registration or signer-set semantics into the single-session game.  Those are separate construction or systems obligations.
 
 \section{Security definitions and composition}\label{sec:security}
@@ -734,7 +718,7 @@ Table~\ref{tab:audit} contrasts the wrappers and locates the remaining construct
 
 \begin{table}[t]
 \centering
-\caption{Direct-key and session-separated wrappers.  Neither supplies history authentication or global freshness.}
+\caption{Direct-key and session-separated wrappers.}
 \label{tab:audit}
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{.21\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
 \toprule

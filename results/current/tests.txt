@@ -1,0 +1,55 @@
+test_all_identifier_classes_require_printable_ascii (test_boundaries.BoundaryTests.test_all_identifier_classes_require_printable_ascii) ... ok
+test_application_surrogate_alias_is_a_static_collision_but_outside_domain (test_boundaries.BoundaryTests.test_application_surrogate_alias_is_a_static_collision_but_outside_domain) ... ok
+test_archived_reproduce_runner_refuses_without_starting_campaign (test_boundaries.BoundaryTests.test_archived_reproduce_runner_refuses_without_starting_campaign) ... ok
+test_bounded_read_accepts_limit_and_rejects_limit_plus_one (test_boundaries.BoundaryTests.test_bounded_read_accepts_limit_and_rejects_limit_plus_one) ... ok
+test_bounded_read_uses_one_handle_and_limit_plus_one_read (test_boundaries.BoundaryTests.test_bounded_read_uses_one_handle_and_limit_plus_one_read) ... ok
+test_identity_and_small_order_public_keys_are_rejected (test_boundaries.BoundaryTests.test_identity_and_small_order_public_keys_are_rejected) ... ok
+test_unicode_scalar_message_is_injective_and_surrogate_object_is_rejected (test_boundaries.BoundaryTests.test_unicode_scalar_message_is_injective_and_surrogate_object_is_rejected) ... ok
+test_unselected_ff_public_key_is_rejected_as_an_invalid_point (test_boundaries.BoundaryTests.test_unselected_ff_public_key_is_rejected_as_an_invalid_point) ... ok
+test_valid_generated_public_key_passes_strict_admission (test_boundaries.BoundaryTests.test_valid_generated_public_key_passes_strict_admission) ... ok
+test_certificate_schema_is_strict (test_core.CoreTests.test_certificate_schema_is_strict) ... ok
+test_certificate_tampering (test_core.CoreTests.test_certificate_tampering) ... ok
+test_context_length_and_event_uniqueness (test_core.CoreTests.test_context_length_and_event_uniqueness) ... ok
+test_cross_identity_causality (test_core.CoreTests.test_cross_identity_causality) ... ok
+test_empty (test_core.CoreTests.test_empty) ... ok
+test_fork_and_resolution (test_core.CoreTests.test_fork_and_resolution) ... ok
+test_history_payload_excludes_application_message_but_binds_view (test_core.CoreTests.test_history_payload_excludes_application_message_but_binds_view) ... ok
+test_invalid_cuts (test_core.CoreTests.test_invalid_cuts) ... ok
+test_invalid_schema (test_core.CoreTests.test_invalid_schema) ... ok
+test_nonideal_certificate_bound_is_rejected (test_core.CoreTests.test_nonideal_certificate_bound_is_rejected) ... ok
+test_profile_validation (test_core.CoreTests.test_profile_validation) ... ok
+test_reused_public_key_is_not_version_identity (test_core.CoreTests.test_reused_public_key_is_not_version_identity) ... ok
+test_session_missing_authorization_rejected (test_core.CoreTests.test_session_missing_authorization_rejected) ... ok
+test_session_separation_exact_binding (test_core.CoreTests.test_session_separation_exact_binding) ... ok
+test_session_table_and_mode_validation (test_core.CoreTests.test_session_table_and_mode_validation) ... ok
+test_session_table_binds_version_event (test_core.CoreTests.test_session_table_binds_version_event) ... ok
+test_recursive_figure_and_proof_inputs_are_checked (test_manuscript_sync.ManuscriptSyncTests.test_recursive_figure_and_proof_inputs_are_checked) ... ok
+test_scientific_qualification_changes_are_not_ignored (test_manuscript_sync.ManuscriptSyncTests.test_scientific_qualification_changes_are_not_ignored) ... ok
+test_standalone_scope_and_blank_line_normalization (test_manuscript_sync.ManuscriptSyncTests.test_standalone_scope_and_blank_line_normalization) ... ok
+test_base_signature_mutations_rejected (test_reference_profile.ReferenceProfileTests.test_base_signature_mutations_rejected) ... ok
+test_certificate_schema_and_type_are_strict (test_reference_profile.ReferenceProfileTests.test_certificate_schema_and_type_are_strict) ... ok
+test_cli_rejects_duplicate_json_member (test_reference_profile.ReferenceProfileTests.test_cli_rejects_duplicate_json_member) ... ok
+test_cli_rejects_noncanonical_wire_encoding (test_reference_profile.ReferenceProfileTests.test_cli_rejects_noncanonical_wire_encoding) ... ok
+test_cli_rejects_oversized_input_before_json_parsing (test_reference_profile.ReferenceProfileTests.test_cli_rejects_oversized_input_before_json_parsing) ... ok
+test_cli_rejects_tampered_file (test_reference_profile.ReferenceProfileTests.test_cli_rejects_tampered_file) ... ok
+test_context_binding_rejects_event_view_and_profile_mutations (test_reference_profile.ReferenceProfileTests.test_context_binding_rejects_event_view_and_profile_mutations) ... ok
+test_context_binding_rejects_every_application_identifier (test_reference_profile.ReferenceProfileTests.test_context_binding_rejects_every_application_identifier) ... ok
+test_delegation_mutations_rejected (test_reference_profile.ReferenceProfileTests.test_delegation_mutations_rejected) ... ok
+test_duplicate_ephemeral_key_rejected (test_reference_profile.ReferenceProfileTests.test_duplicate_ephemeral_key_rejected) ... ok
+test_ephemeral_table_binds_identity_event_and_key (test_reference_profile.ReferenceProfileTests.test_ephemeral_table_binds_identity_event_and_key) ... ok
+test_history_signature_and_schema_mutations_rejected (test_reference_profile.ReferenceProfileTests.test_history_signature_and_schema_mutations_rejected) ... ok
+test_identical_public_key_bytes_do_not_replace_event_identity (test_reference_profile.ReferenceProfileTests.test_identical_public_key_bytes_do_not_replace_event_identity) ... ok
+test_issue_verify_and_canonical_bytes (test_reference_profile.ReferenceProfileTests.test_issue_verify_and_canonical_bytes) ... ok
+test_issuer_rejects_mismatched_or_missing_private_keys (test_reference_profile.ReferenceProfileTests.test_issuer_rejects_mismatched_or_missing_private_keys) ... ok
+test_noncanonical_context_order_rejected (test_reference_profile.ReferenceProfileTests.test_noncanonical_context_order_rejected) ... ok
+test_noncanonical_hex_and_all_zero_keys_rejected (test_reference_profile.ReferenceProfileTests.test_noncanonical_hex_and_all_zero_keys_rejected) ... ok
+test_packaged_example_and_cli (test_reference_profile.ReferenceProfileTests.test_packaged_example_and_cli) ... ok
+test_reference_profile_rejects_cross_identity_long_term_key_alias (test_reference_profile.ReferenceProfileTests.test_reference_profile_rejects_cross_identity_long_term_key_alias) ... ok
+test_reference_profile_rejects_cross_role_key_reuse (test_reference_profile.ReferenceProfileTests.test_reference_profile_rejects_cross_role_key_reuse) ... ok
+test_reference_profile_rejects_malformed_active_key_even_if_unselected (test_reference_profile.ReferenceProfileTests.test_reference_profile_rejects_malformed_active_key_even_if_unselected) ... ok
+test_wrong_history_trust_anchor_rejected (test_reference_profile.ReferenceProfileTests.test_wrong_history_trust_anchor_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 50 tests in 2.696s
+
+OK

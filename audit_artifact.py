@@ -81,6 +81,7 @@ def main() -> int:
         "claim_evidence_ledger.csv",
         "literature.csv", "bibliography_audit.csv", "external_resources.csv",
         "proofs/analysis.tex", "proofs/analysis.pdf",
+        "proofs/figures/causal-conflicts.pdf", "plot_schematics.py",
         "src/wire_profile.py", "src/ed25519_points.py",
         "tests/test_boundaries.py",
         "examples/reference-certificate.json",
@@ -156,6 +157,10 @@ def main() -> int:
     require(len(bibitems) == 80, f"expected 80 embedded bibitems, found {len(bibitems)}")
     require(set(bibitems) == set(lit_keys), "embedded bibliography keys do not match the ledgers")
     manuscript_sync = check_manuscript_sync(analysis, ROOT.parent / "paper")
+    sibling_figure = ROOT.parent / 'paper' / 'figures' / 'causal-conflicts.pdf'
+    if sibling_figure.is_file():
+        require(sibling_figure.read_bytes() == (ROOT/'proofs/figures/causal-conflicts.pdf').read_bytes(),
+                'standalone diagram differs from current manuscript')
 
     campaign = json.loads((ROOT / "results/campaign-status.json").read_text(encoding="utf-8"))
     breach = campaign["terminal_breach"]

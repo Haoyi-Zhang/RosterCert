@@ -1,0 +1,15 @@
+{
+  "campaign_status": "permanently noncompliant",
+  "cited_bibliography_rows": 80,
+  "claim_rows": 33,
+  "embedded_bibitems": 80,
+  "external_resource_rows": 83,
+  "literature_rows": 80,
+  "manuscript_source_sync": "not checked: standalone artifact has no sibling paper source",
+  "reference_certificate": "valid canonical Ed25519 profile fixture",
+  "scope": "static delivery audit only; scientific campaign not rerun",
+  "status": "PASS",
+  "terminal_charged_obligations": 835446,
+  "terminal_limit": 600000,
+  "unit_test_methods": 50
+}

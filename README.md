@@ -61,7 +61,7 @@ This prints the limitation and intentionally exits **2**, before generator impor
 - `examples/`: public certificate and independent history trust anchor; see its README for input semantics.
 - `data/`, `results/`: frozen historical diagnostics and required provenance disclosures.
 - `claim_evidence_ledger.csv`, `literature.csv`, `bibliography_audit.csv`, `external_resources.csv`: claim/source mappings, 80-source bibliography, reading depth, identifiers, and license boundaries.
-- `proofs/analysis.tex`, `proofs/analysis.pdf`: self-contained 37-page article with 80 embedded references; no BibTeX, external inputs, project-tree paths, or network dependency.
+- `proofs/analysis.tex`, `proofs/analysis.pdf`: article with 80 embedded references and its vector diagram in `proofs/figures/`; no BibTeX, external TeX inputs, project-tree paths, or network dependency.
 
 With `pdflatex` installed:
 
@@ -71,7 +71,10 @@ pdflatex -interaction=nonstopmode -halt-on-error analysis.tex
 pdflatex -interaction=nonstopmode -halt-on-error analysis.tex
 ```
 
-Compilation checks typesetting and references, not the written proofs.
+Compilation checks typesetting and references, not the written proofs. With
+Matplotlib installed, `python -B plot_schematics.py --outdir proofs/figures`
+regenerates the vector diagram. The complete project uses the same PDF in the
+sibling paper's `figures/` directory; the audit checks their byte identity.
 
 ## Conditions and licensing
 
