@@ -11,6 +11,7 @@ import csv
 import json
 import re
 import sys
+import zipfile
 from pathlib import Path
 from typing import Any
 
@@ -88,6 +89,7 @@ def main() -> int:
         "examples/reference-history-public-key.txt",
         "results/campaign-status.json",
         "results/HISTORICAL-SOURCE-LIMITATION.md",
+        "validate_current.py", "results/current-validation.zip",
     ]
     missing = [name for name in required if not (ROOT / name).is_file()]
     require(not missing, f"missing required files: {missing}")
@@ -171,6 +173,23 @@ def main() -> int:
     require(int(breach["limit"]) == 600000 and int(breach["charged_obligations"]) > int(breach["limit"]),
             "terminal breach is not represented correctly")
 
+    with zipfile.ZipFile(ROOT / 'results/current-validation.zip') as archive:
+        current = json.loads(archive.read('validation.json'))
+        plan = json.loads(archive.read('plan.json'))
+        accounting = json.loads(archive.read('accounting.json'))
+        inputs = json.loads(archive.read('inputs.json'))
+        outcomes = json.loads(archive.read('outcomes.json'))
+        require(current['status'] == 'passed' and len(inputs) == len(outcomes) == 141,
+                'current validation population or result differs')
+        require(inputs == plan['input_instances'], 'current validation inputs differ from plan')
+        require(accounting['status'] == 'completed' and
+                accounting['charged_obligations'] == plan['maximum_obligations'] == 55839 and
+                accounting['ceiling'] == plan['ceiling'] == 100000,
+                'current validation budget record differs')
+        for name in ('src/cases.py','src/roster.py','src/oracle.py','src/wire_profile.py','validate_current.py','LICENSE'):
+            require(archive.read('source/' + name) == (ROOT / name).read_bytes(),
+                    'current validation source differs: ' + name)
+
     report = {
         "status": "PASS",
         "scope": "static delivery audit only; scientific campaign not rerun",
@@ -185,6 +204,7 @@ def main() -> int:
         "campaign_status": campaign["status"],
         "terminal_charged_obligations": int(breach["charged_obligations"]),
         "terminal_limit": int(breach["limit"]),
+        "current_validation": {"cases": 141, "charged_obligations": 55839, "ceiling": 100000},
     }
     print(json.dumps(report, indent=2, sort_keys=True))
     return 0

@@ -43,6 +43,30 @@ python -B verify_reference.py examples/reference-certificate.json examples/refer
 
 The test keys are public and unsafe for real authorization. The verifier rejects noncanonical JSON, duplicate members, invalid active Ed25519 keys, role/key aliases, malformed contexts, and oversized reads. Identifiers are nonempty printable US-ASCII; messages are Unicode scalar values, with surrogate code points rejected before canonical encoding. See `BOUNDARY-VALIDATION.md` for the exact interfaces and regression cases.
 
+## Current finite validation
+
+`results/current-validation.zip` contains the independently authorized current-source
+study: 141 inputs, frozen executable source, a prospective plan, environment,
+outcomes and cumulative accounting. All 141 cases pass, including 2,725 current
+states, 2,725 authorization decisions, 141 windows, 141 universal judgments and
+ten chain optimum/flow comparisons. The conservative charge is 55,839 against
+a separately declared 100,000 ceiling. Candidate subsets that are not cuts and
+unused decision slots are still charged.
+
+To create another separately budgeted validation, use an absent directory outside
+the artifact, inspect the plan before execution, then execute it once:
+
+```sh
+python -B validate_current.py self-test
+python -B validate_current.py plan --out ../current-validation
+python -B validate_current.py execute --out ../current-validation
+```
+
+The runner rejects changed inputs/sources, a repeated start, and reservations
+above its ceiling before enumeration. This study checks current finite roster,
+window and chain-flow implementation agreement, not primitive security. It does
+not depend on the unavailable early session helper or change the old campaign.
+
 ## Historical campaign: not reproducible evidence
 
 The historical finite diagnostic campaign permanently exceeded its cumulative ceiling: **835,446** charged obligations against **600,000**. Later runs cannot reset, exclude, or repair that terminal breach. All frozen `data/` and `results/` files are non-evidentiary provenance/source-inspection material, not support for any theorem, cryptographic property, complexity result, resource claim, or scientific reproduction claim.
