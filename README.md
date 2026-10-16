@@ -53,8 +53,9 @@ ten chain optimum/flow comparisons. The conservative charge is 55,839 against
 a separately declared 100,000 ceiling. Candidate subsets that are not cuts and
 unused decision slots are still charged.
 
-To create another separately budgeted validation, use an absent directory outside
-the artifact, inspect the plan before execution, then execute it once:
+Any further finite activity requires its own budget authorization. With that
+authorization, use an absent directory outside the artifact, inspect the plan
+before execution, then execute it once:
 
 ```sh
 python -B validate_current.py self-test
@@ -62,8 +63,11 @@ python -B validate_current.py plan --out ../current-validation
 python -B validate_current.py execute --out ../current-validation
 ```
 
-The runner rejects changed inputs/sources, a repeated start, and reservations
-above its ceiling before enumeration. This study checks current finite roster,
+The runner rejects changed inputs/sources, a repeated or simultaneous start, and
+reservations above its ceiling before enumeration. The archived execution driver
+is retained exactly; the current driver additionally uses exclusive creation of
+the start marker, checked without another finite campaign. The four archived
+semantic modules match the current modules byte-for-byte. This study checks current finite roster,
 window and chain-flow implementation agreement, not primitive security. It does
 not depend on the unavailable early session helper or change the old campaign.
 

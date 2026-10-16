@@ -186,9 +186,11 @@ def main() -> int:
                 accounting['charged_obligations'] == plan['maximum_obligations'] == 55839 and
                 accounting['ceiling'] == plan['ceiling'] == 100000,
                 'current validation budget record differs')
-        for name in ('src/cases.py','src/roster.py','src/oracle.py','src/wire_profile.py','validate_current.py','LICENSE'):
+        for name in ('src/cases.py','src/roster.py','src/oracle.py','src/wire_profile.py','LICENSE'):
             require(archive.read('source/' + name) == (ROOT / name).read_bytes(),
                     'current validation source differs: ' + name)
+        require(bool(archive.read('source/validate_current.py')),
+                'actual execution driver is absent from validation archive')
 
     report = {
         "status": "PASS",

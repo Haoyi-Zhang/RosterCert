@@ -9,6 +9,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 from collections import Counter
 import argparse, json, os, platform, shutil, sys
+import tempfile
 
 ROOT = Path(__file__).resolve().parent
 CEILING = 100_000
@@ -21,6 +22,13 @@ def reserve(used, amount, ceiling):
     if type(amount) is not int or amount < 0 or used + amount > ceiling:
         raise ValueError('validation budget exceeded before enumeration')
     return used + amount
+
+def start_once(output, environment):
+    # Exclusive creation closes the simultaneous-start race as well as normal
+    # sequential restarts. The marker remains after failure: no resume/reset.
+    with (output/'started.json').open('x',encoding='utf-8') as handle:
+        json.dump(environment,handle,indent=2,sort_keys=True)
+        handle.write('\n')
 
 def plan(output):
     sys.path.insert(0, str(ROOT/'src'))
@@ -69,7 +77,7 @@ def execute(output):
     maximum=sum(3*(1<<len(c['events']))+4 for c in inputs)
     assert maximum==p['maximum_obligations']
     reserve(0,maximum,CEILING)
-    dump(output/'started.json',{'utc':datetime.now(timezone.utc).isoformat(),'python':sys.version,'platform':platform.platform(),'workers':1,'executable':sys.executable})
+    start_once(output,{'utc':datetime.now(timezone.utc).isoformat(),'python':sys.version,'platform':platform.platform(),'workers':1,'executable':sys.executable})
     # Run only the frozen source files, not imports from a subsequently edited tree.
     sys.path.insert(0,str(output/'source/src'))
     from roster import Roster
@@ -126,6 +134,12 @@ def main():
             try: reserve(used,amount,CEILING)
             except ValueError: pass
             else: raise AssertionError('invalid reservation accepted')
+        with tempfile.TemporaryDirectory() as tmp:
+            folder=Path(tmp);start_once(folder,{'test':'first'})
+            try:start_once(folder,{'test':'second'})
+            except FileExistsError:pass
+            else:raise AssertionError('duplicate start accepted')
+            assert json.loads((folder/'started.json').read_text())=={'test':'first'}
         print('budget boundary checks passed'); return 0
     if args.out is None: parser.error('--out is required')
     output=args.out.resolve()
