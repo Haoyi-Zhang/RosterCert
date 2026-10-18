@@ -111,3 +111,7 @@ Event authenticity, admission, ownership, and observation completeness are expli
 Neither the Ed25519 nor proof-only BGLS profile supplies constant stored registry-key compression or constant-size causal certificates. The BGLS aggregate alone is one source-group element; its table and other evidence remain linear. See the article for the conditional theorems and assumptions.
 
 Project source and benign fixtures are covered by `LICENSE`. No publisher paper text, third-party implementation, credential, or private data is redistributed.
+
+## Portable path notation
+
+Published execution records use `<PYTHON_ROOT>`, `<NODE_ROOT>`, `<RUNTIME_ROOT>` and `<PROJECTS_ROOT>` for machine-local installation and workspace prefixes. These are path aliases, not literal directories; substitute the corresponding local roots when replaying a command. Recorded interpreter and dependency versions, inputs, measurements and outcomes are unchanged. File inventories bind the published portable serializations; any `recorded_` identity denotes the pre-normalization bytes.
