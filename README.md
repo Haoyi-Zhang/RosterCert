@@ -73,7 +73,7 @@ not depend on the unavailable early session helper or change the old campaign.
 
 ## Historical campaign: not reproducible evidence
 
-The historical finite diagnostic campaign permanently exceeded its cumulative ceiling: **835,446** charged obligations against **600,000**. Later runs cannot reset, exclude, or repair that terminal breach. All frozen `data/` and `results/` files are non-evidentiary provenance/source-inspection material, not support for any theorem, cryptographic property, complexity result, resource claim, or scientific reproduction claim.
+The historical finite diagnostic campaign permanently exceeded its cumulative ceiling: **835,446** charged obligations against **600,000**. Later runs cannot reset, exclude, or repair that terminal breach. The frozen historical files in `data/` and the historical campaign files identified in `results/README.md` are non-evidentiary provenance/source-inspection material, not support for any theorem, cryptographic property, complexity result, resource claim, or scientific reproduction claim. The separately authorized `results/current-validation.zip` study is excluded from this historical-file classification and has only the finite validation scope stated above.
 
 `results/campaign-status.json` is authoritative; `results/README.md` explains the retained inputs, ledgers, outputs, and later post-breach activity. The exact pre-V3 two-column session helper behind the archived 12 mutation labels is absent; `results/HISTORICAL-SOURCE-LIMITATION.md` documents the gap. The current V3 identity/event/key codec is not a historical replacement.
 
@@ -87,20 +87,23 @@ This prints the limitation and intentionally exits **2**, before generator impor
 
 - `src/`: roster semantics, bounded oracle/generator, shared wire encoding, Ed25519 admission, session payloads, and reference profile.
 - `examples/`: public certificate and independent history trust anchor; see its README for input semantics.
-- `data/`, `results/`: frozen historical diagnostics and required provenance disclosures.
+- `data/`: frozen historical diagnostics; `results/`: historical campaign files and required provenance disclosures, plus the separate current finite study in `current-validation.zip`.
 - `claim_evidence_ledger.csv`, `literature.csv`, `bibliography_audit.csv`, `external_resources.csv`: claim/source mappings, 80-source bibliography, reading depth, identifiers, and license boundaries.
 - `proofs/analysis.tex`, `proofs/analysis.pdf`: article with 80 embedded references and its vector diagram in `proofs/figures/`; no BibTeX, external TeX inputs, project-tree paths, or network dependency.
 
-With `pdflatex` installed:
+From this artifact root, with `pdflatex` installed:
 
 ```sh
-cd proofs
-pdflatex -interaction=nonstopmode -halt-on-error analysis.tex
-pdflatex -interaction=nonstopmode -halt-on-error analysis.tex
+(
+  cd proofs || exit 1
+  pdflatex -interaction=nonstopmode -halt-on-error analysis.tex
+  pdflatex -interaction=nonstopmode -halt-on-error analysis.tex
+)
 ```
 
-Compilation checks typesetting and references, not the written proofs. With
-Matplotlib installed, `python -B plot_schematics.py --outdir proofs/figures`
+Compilation checks typesetting and references, not the written proofs. From
+the same artifact root, with Matplotlib installed,
+`python -B plot_schematics.py --outdir proofs/figures`
 regenerates the vector diagram. The complete project uses the same PDF in the
 sibling paper's `figures/` directory; the audit checks their byte identity.
 
